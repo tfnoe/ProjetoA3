@@ -87,8 +87,8 @@ public class FRM_Principal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        FRM_CadUsuario objcadusuario = new FRM_CadUsuario();
-        objcadusuario.setVisible(true);
+        FRM_Usuario objusuario = new FRM_Usuario();
+        objusuario.setVisible(true);
         
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 

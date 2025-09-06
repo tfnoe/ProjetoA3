@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -16,7 +17,7 @@ import javax.swing.table.DefaultTableModel;
  * @author tf_noe
  */
 public class FRM_Usuario extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FRM_Usuario.class.getName());
 
     /**
@@ -26,27 +27,23 @@ public class FRM_Usuario extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         carregarDadosNaTabela();
-        
+
     }
 
     private void carregarDadosNaTabela() {
         // Pega o modelo da tabela que criamos no modo Design
         DefaultTableModel modelo = (DefaultTableModel) this.tabelaUsuarios.getModel();
-        
+
         // Limpa a tabela para evitar duplicidade de dados ao recarregar
         modelo.setRowCount(0);
 
         // String com o comando SQL para buscar os usuários
         String sql = "SELECT * from tbl_usuario order by nm_usuario";
-        
+
         // Bloco try-with-resources para garantir que a conexão será fechada
         try (
-            
-            Connection conexao = new ConexaoDAO().conectaBD();
-                
-             PreparedStatement stmt = conexao.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            
+                Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+
             // Itera sobre os resultados da consulta
             while (rs.next()) {
                 // Adiciona uma nova linha no modelo da tabela
@@ -61,6 +58,7 @@ public class FRM_Usuario extends javax.swing.JFrame {
             System.err.println("Erro ao carregar dados dos usuários: " + e.getMessage());
         }
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -72,8 +70,12 @@ public class FRM_Usuario extends javax.swing.JFrame {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         tabelaUsuarios = new javax.swing.JTable();
+        Btn_editar = new javax.swing.JButton();
+        Btn_deletar = new javax.swing.JButton();
+        Btn_novo = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Cadastro de Usuário");
 
         tabelaUsuarios.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -85,8 +87,42 @@ public class FRM_Usuario extends javax.swing.JFrame {
             new String [] {
                 "Código", "Nome", "Tipo de Acesso"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tabelaUsuarios.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tabelaUsuariosMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(tabelaUsuarios);
+
+        Btn_editar.setText("Editar");
+        Btn_editar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Btn_editarActionPerformed(evt);
+            }
+        });
+
+        Btn_deletar.setText("Deletar");
+        Btn_deletar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Btn_deletarActionPerformed(evt);
+            }
+        });
+
+        Btn_novo.setText("Novo");
+        Btn_novo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Btn_novoActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -95,18 +131,137 @@ public class FRM_Usuario extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(191, Short.MAX_VALUE))
+                .addGap(26, 26, 26)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Btn_editar, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Btn_novo, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Btn_deletar, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(26, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 324, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(16, 16, 16)
+                        .addComponent(Btn_novo)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(Btn_editar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(Btn_deletar))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 324, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(19, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void Btn_editarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_editarActionPerformed
+        int linhaSelecionada = this.tabelaUsuarios.getSelectedRow();
+        
+        // 3. Obter os dados da linha selecionada
+        int id = (int) this.tabelaUsuarios.getValueAt(linhaSelecionada, 0); // Coluna do ID
+        String nome = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 1); // Coluna do Nome
+        String tp_acesso = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 2); // Coluna do E-mail
+
+        // 4. Abrir a tela de edição, passando os dados para ela
+        // O 'this' se refere à janela principal (FRM_Usuario), e 'true' torna a janela de edição "modal"
+        FRM_EditaUsuario telaEdicao = new FRM_EditaUsuario(this, true);
+        
+        // 5. Enviar os dados do usuário para a tela de edição
+        telaEdicao.receberDados(id, nome, tp_acesso);
+        
+        // 6. Tornar a tela de edição visível
+        telaEdicao.setVisible(true);
+        
+        // 7. (Opcional, mas recomendado) Atualizar a tabela principal após a edição
+        // Este código só será executado DEPOIS que a janela de edição for fechada
+        carregarDadosNaTabela();
+    }//GEN-LAST:event_Btn_editarActionPerformed
+
+    private void Btn_novoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_novoActionPerformed
+        FRM_CadUsuario telaDeCadastro = new FRM_CadUsuario(this, true);
+        telaDeCadastro.setVisible(true);  
+        carregarDadosNaTabela();// TODO add your handling code here:
+    }//GEN-LAST:event_Btn_novoActionPerformed
+
+    private void Btn_deletarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_deletarActionPerformed
+
+        // 1. Pegar a linha selecionada na tabela
+        int linhaSelecionada = this.tabelaUsuarios.getSelectedRow();
+
+        // 2. Verificar se realmente há uma linha selecionada
+        if (linhaSelecionada == -1) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecione um usuário para deletar.");
+            return; // Para a execução do método aqui
+        }
+
+        // 3. Pegar o ID do usuário da linha selecionada (assumindo que o ID está na primeira coluna, índice 0)
+        // O .getValueAt() retorna um Object, então precisamos convertê-lo para String e depois para int.
+        int idUsuario = (int) this.tabelaUsuarios.getValueAt(linhaSelecionada, 0);
+
+        // 4. Pedir confirmação ao usuário (boa prática)
+        int confirmacao = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja deletar o usuário selecionado?", "Confirmação de Exclusão", JOptionPane.YES_NO_OPTION);
+
+        if (confirmacao == JOptionPane.YES_OPTION) {
+            // Se o usuário clicou "Sim", prossiga com a exclusão
+            String sql = "DELETE FROM tbl_usuario WHERE id_usuario = ?";
+
+            try (Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql)) {
+
+                // 5. Substituir o '?' pelo ID do usuário
+                stmt.setInt(1, idUsuario);
+
+                // 6. Executar o comando de exclusão e verificar se alguma linha foi afetada
+                int linhasAfetadas = stmt.executeUpdate();
+
+                if (linhasAfetadas > 0) {
+                    // Se a exclusão deu certo
+                    JOptionPane.showMessageDialog(this, "Usuário deletado com sucesso!");
+
+                    // 7. Atualizar a tabela para refletir a exclusão
+                    this.carregarDadosNaTabela();
+                } else {
+                    // Se nenhum usuário com aquele ID foi encontrado
+                    JOptionPane.showMessageDialog(this, "Erro: Usuário não encontrado no banco de dados.");
+                }
+
+            } catch (SQLException e) {
+                // Em caso de erro de SQL
+                JOptionPane.showMessageDialog(this, "Erro ao deletar usuário do banco de dados:\n" + e.getMessage());
+            }
+        }
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Btn_deletarActionPerformed
+
+    private void tabelaUsuariosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelaUsuariosMouseClicked
+        // 1. Verificar se foi um duplo-clique
+    if (evt.getClickCount() == 2) {
+        
+        // 2. Pegar a linha selecionada
+        int linhaSelecionada = this.tabelaUsuarios.getSelectedRow();
+        
+        // 3. Obter os dados da linha selecionada
+        int id = (int) this.tabelaUsuarios.getValueAt(linhaSelecionada, 0); // Coluna do ID
+        String nome = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 1); // Coluna do Nome
+        String tp_acesso = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 2); // Coluna do E-mail
+
+        // 4. Abrir a tela de edição, passando os dados para ela
+        // O 'this' se refere à janela principal (FRM_Usuario), e 'true' torna a janela de edição "modal"
+        FRM_EditaUsuario telaEdicao = new FRM_EditaUsuario(this, true);
+        
+        // 5. Enviar os dados do usuário para a tela de edição
+        telaEdicao.receberDados(id, nome, tp_acesso);
+        
+        // 6. Tornar a tela de edição visível
+        telaEdicao.setVisible(true);
+        
+        // 7. (Opcional, mas recomendado) Atualizar a tabela principal após a edição
+        // Este código só será executado DEPOIS que a janela de edição for fechada
+        carregarDadosNaTabela();
+    }
+    }//GEN-LAST:event_tabelaUsuariosMouseClicked
 
     /**
      * @param args the command line arguments
@@ -134,6 +289,9 @@ public class FRM_Usuario extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Btn_deletar;
+    private javax.swing.JButton Btn_editar;
+    private javax.swing.JButton Btn_novo;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable tabelaUsuarios;
     // End of variables declaration//GEN-END:variables

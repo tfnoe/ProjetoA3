@@ -6,24 +6,21 @@ package View;
 
 import DAO.UsuarioDAO;
 import DTO.UsuarioDTO;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.JOptionPane;
 
 /**
  *
  * @author tf_noe
  */
-public class FRM_CadUsuario extends javax.swing.JFrame {
+public class FRM_CadUsuario extends javax.swing.JDialog {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FRM_CadUsuario.class.getName());
 
     /**
      * Creates new form FRM_CadUsuario
      */
-    public FRM_CadUsuario() {
+    public FRM_CadUsuario(java.awt.Frame parent, boolean modal) {
+        super(parent, modal);
         initComponents();
         this.setLocationRelativeTo(null);
     }
@@ -48,7 +45,7 @@ public class FRM_CadUsuario extends javax.swing.JFrame {
         Cmb_tpacesso = new javax.swing.JComboBox<>();
         jButton1 = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Cadastro de Usuário");
 
         jLabel1.setText("Usuário:");
@@ -164,7 +161,9 @@ public class FRM_CadUsuario extends javax.swing.JFrame {
             UsuarioDAO objusuariodao = new UsuarioDAO ();
             objusuariodao.inserirUsuario(usuario);
             
-        } catch (Exception e) {
+            this.dispose();
+            
+        } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(null, "Cadastro de Usuário" + e);
         }        // TODO add your handling code here:
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -191,7 +190,7 @@ public class FRM_CadUsuario extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new FRM_CadUsuario().setVisible(true));
+        //java.awt.EventQueue.invokeLater(() -> new FRM_CadUsuario().setVisible(true));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
