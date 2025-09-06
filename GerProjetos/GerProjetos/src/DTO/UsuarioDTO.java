@@ -37,12 +37,4 @@ public class UsuarioDTO {
     public void setTp_acesso(String tp_acesso) {
         this.tp_acesso = tp_acesso;
     }
-
-    
-    
-    
-    
-    
-    
-    
 }

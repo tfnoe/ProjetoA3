@@ -24,6 +24,7 @@ public class TelaLogin extends javax.swing.JFrame {
      */
     public TelaLogin() {
         initComponents();
+        this.setLocationRelativeTo(null);
     }
 
     /**
@@ -43,6 +44,7 @@ public class TelaLogin extends javax.swing.JFrame {
         txt_senha = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Sistema de Gerenciamento de Projetos - Login");
         setResizable(false);
 
         jLabel1.setText("Usuário:");
@@ -137,9 +139,7 @@ public class TelaLogin extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btn_entrarActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
+    
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
