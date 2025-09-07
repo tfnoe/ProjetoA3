@@ -17,7 +17,7 @@ public class ConexaoDAO {
         Connection banco = null;
         
         try {
-            String url = "jdbc:mysql://localhost:3306/GerProjetos?user=root&password=Carregador@13";
+            String url = "jdbc:mysql://localhost:3306/gerprojetos?user=root&password=root1234";
             banco = DriverManager.getConnection(url);
                
         } catch (SQLException e) {
