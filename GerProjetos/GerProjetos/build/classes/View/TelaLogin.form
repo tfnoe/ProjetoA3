@@ -52,8 +52,8 @@
                   </Group>
                   <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="txt_senha" max="32767" attributes="0"/>
                       <Component id="txt_usuario" pref="164" max="32767" attributes="0"/>
+                      <Component id="txt_senha" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace pref="7" max="32767" attributes="0"/>
                   <Component id="btn_entrar" min="-2" max="-2" attributes="0"/>
@@ -101,7 +101,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_entrarActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JTextField" name="txt_senha">
+        <Component class="javax.swing.JPasswordField" name="txt_senha">
         </Component>
       </SubComponents>
     </Container>

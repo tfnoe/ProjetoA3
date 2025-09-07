@@ -41,7 +41,7 @@ public class TelaLogin extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         txt_usuario = new javax.swing.JTextField();
         btn_entrar = new javax.swing.JButton();
-        txt_senha = new javax.swing.JTextField();
+        txt_senha = new javax.swing.JPasswordField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Sistema de Gerenciamento de Projetos - Login");
@@ -69,8 +69,8 @@ public class TelaLogin extends javax.swing.JFrame {
                     .addComponent(jLabel2))
                 .addGap(26, 26, 26)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(txt_senha)
-                    .addComponent(txt_usuario, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE))
+                    .addComponent(txt_usuario, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
+                    .addComponent(txt_senha))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
                 .addComponent(btn_entrar)
                 .addGap(22, 22, 22))
@@ -113,7 +113,7 @@ public class TelaLogin extends javax.swing.JFrame {
             String nm_usuario, senha;
         
             nm_usuario = txt_usuario.getText();
-            senha = txt_senha.getText();
+            senha = new String(txt_senha.getPassword());
         
             UsuarioDTO usuario = new UsuarioDTO ();
             usuario.setNm_usuario(nm_usuario);
@@ -125,6 +125,7 @@ public class TelaLogin extends javax.swing.JFrame {
             
             if (rsusuariodao.next()) {
                 FRM_Principal objfrmprincipal = new FRM_Principal();
+                objfrmprincipal.setUsuario(nm_usuario);
                 objfrmprincipal.setVisible(true);
                 dispose();
                 //chamar tela principal
@@ -167,7 +168,7 @@ public class TelaLogin extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JTextField txt_senha;
+    private javax.swing.JPasswordField txt_senha;
     private javax.swing.JTextField txt_usuario;
     // End of variables declaration//GEN-END:variables
 }
