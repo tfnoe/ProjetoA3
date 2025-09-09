@@ -4,8 +4,10 @@
  */
 package View;
 
-import DAO.UsuarioDAO;
-import DTO.UsuarioDTO;
+import DAO.ConexaoDAO;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import javax.swing.JOptionPane;
 
 /**
@@ -15,7 +17,8 @@ import javax.swing.JOptionPane;
 public class FRM_CadUsuario extends javax.swing.JDialog {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FRM_CadUsuario.class.getName());
-
+    Connection banco;
+    PreparedStatement pstm;
     /**
      * Creates new form FRM_CadUsuario
      */
@@ -37,13 +40,16 @@ public class FRM_CadUsuario extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        Txt_idusuario = new javax.swing.JTextField();
         Txt_nmusuario = new javax.swing.JTextField();
         Txt_senhausuario = new javax.swing.JTextField();
         Cmb_tpacesso = new javax.swing.JComboBox<>();
         jButton1 = new javax.swing.JButton();
+        jLabel6 = new javax.swing.JLabel();
+        txt_username = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        txt_emailusuario = new javax.swing.JTextField();
+        ck_statususuario = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Cadastro de Usuário");
@@ -51,8 +57,6 @@ public class FRM_CadUsuario extends javax.swing.JDialog {
         jLabel1.setText("Usuário:");
 
         jLabel3.setText("Senha:");
-
-        jLabel4.setText("Código Usuário: ");
 
         jLabel5.setText("Tipo de Acesso:");
 
@@ -76,58 +80,77 @@ public class FRM_CadUsuario extends javax.swing.JDialog {
             }
         });
 
+        jLabel6.setText("User Name:");
+
+        jLabel7.setText("Email:");
+
+        ck_statususuario.setText("Usuário Ativo");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(27, 27, 27)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jButton1)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jLabel2)
-                        .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel1)
                             .addComponent(jLabel5)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(Cmb_tpacesso, 0, 206, Short.MAX_VALUE))
-                        .addGroup(layout.createSequentialGroup()
                             .addComponent(jLabel3)
-                            .addGap(68, 68, 68)
-                            .addComponent(Txt_senhausuario))
-                        .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel4)
-                                .addComponent(jLabel1))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(Txt_nmusuario, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
-                                .addComponent(Txt_idusuario)))))
-                .addContainerGap(66, Short.MAX_VALUE))
+                            .addComponent(jLabel7))
+                        .addGap(14, 14, 14)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(Txt_nmusuario)
+                                    .addComponent(txt_username)
+                                    .addComponent(txt_emailusuario, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(Txt_senhausuario, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addComponent(ck_statususuario)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jButton1))
+                                .addComponent(Cmb_tpacesso, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(jLabel2))
+                .addContainerGap(51, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(48, 48, 48)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel4)
-                    .addComponent(Txt_idusuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(Txt_nmusuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(Txt_senhausuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(40, 40, 40)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txt_username, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Txt_nmusuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(Cmb_tpacesso, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Txt_senhausuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txt_emailusuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel7))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(35, 35, 35)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5)
+                            .addComponent(Cmb_tpacesso, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton1)
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(ck_statususuario)
+                    .addComponent(jButton1))
+                .addGap(69, 69, 69))
         );
 
         pack();
@@ -142,30 +165,50 @@ public class FRM_CadUsuario extends javax.swing.JDialog {
     }//GEN-LAST:event_Txt_nmusuarioActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        try {
-            int id_usuario;
-            String nm_usuario, senha,tp_acesso;
+        //try {
+            //int id_usuario;
+            String nm_usuario, senha,tp_acesso,user_name,status_usuario,email;
         
             nm_usuario = Txt_nmusuario.getText();
             senha = Txt_senhausuario.getText();
-            id_usuario = Integer.parseInt(Txt_idusuario.getText());
+            //id_usuario = Integer.parseInt(Txt_idusuario.getText());
             tp_acesso = (String) Cmb_tpacesso.getSelectedItem();
+            user_name = txt_username.getText();
+            email = txt_emailusuario.getText();
             
-        
-            UsuarioDTO usuario = new UsuarioDTO ();
-            usuario.setId_usuario(id_usuario);
-            usuario.setTp_acesso(tp_acesso);
-            usuario.setNm_usuario(nm_usuario);
-            usuario.setSenha_usuario(senha);
+            if (ck_statususuario.isSelected()){
+                status_usuario = "A";
+            }else {
+                status_usuario = "I";
+            }
             
-            UsuarioDAO objusuariodao = new UsuarioDAO ();
-            objusuariodao.inserirUsuario(usuario);
+            banco = new ConexaoDAO().conectaBD();
+       
+        try {
+            
+            String sql = "insert into tbl_usuario (nm_usuario,senha_usuario,tp_acesso, user_name, status_usuario,email_usuario) values (?,?,?,?,?,?);";
+            pstm = banco.prepareStatement(sql);
+            //pstm.setInt (1, objusuarioDTO.getId_usuario());
+            pstm.setString (1, nm_usuario);
+            pstm.setString (2, senha);
+            pstm.setString (3, tp_acesso);
+            pstm.setString (4, user_name);
+            pstm.setString (5, status_usuario);
+            pstm.setString (6, email);
+            pstm.execute();
+            pstm.close();
+            
+            JOptionPane.showMessageDialog(null, "Usuário Cadastrado com Sucesso");
+            //ResultSet rs = pstm.executeQuery();
+         
+            
+            
+        } catch (SQLException erro) {
+            JOptionPane.showMessageDialog(null,"UsuarioDAO - CadastroUsuario"+ erro);
+        }
             
             this.dispose();
-            
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "Cadastro de Usuário" + e);
-        }        // TODO add your handling code here:
+       
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
@@ -195,14 +238,17 @@ public class FRM_CadUsuario extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> Cmb_tpacesso;
-    private javax.swing.JTextField Txt_idusuario;
     private javax.swing.JTextField Txt_nmusuario;
     private javax.swing.JTextField Txt_senhausuario;
+    private javax.swing.JCheckBox ck_statususuario;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JTextField txt_emailusuario;
+    private javax.swing.JTextField txt_username;
     // End of variables declaration//GEN-END:variables
 }

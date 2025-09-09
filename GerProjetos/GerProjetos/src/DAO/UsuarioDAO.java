@@ -20,7 +20,7 @@ public class UsuarioDAO {
        
         try {
             
-            String sql = "select * from tbl_usuario where nm_usuario = ? and senha_usuario = ?";
+            String sql = "select * from tbl_usuario where user_name = ? and senha_usuario = ? and status_usuario = 'A'";
             pstm = banco.prepareStatement(sql);
             pstm.setString (1, objusuarioDTO.getNm_usuario());
             pstm.setString (2,objusuarioDTO.getSenha_usuario());

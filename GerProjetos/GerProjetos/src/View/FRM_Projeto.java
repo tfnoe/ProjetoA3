@@ -13,6 +13,8 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import java.util.ArrayList;
 import java.util.List;
+import java.text.SimpleDateFormat;
+import javax.swing.table.DefaultTableCellRenderer;
 
 /**
  *
@@ -29,9 +31,46 @@ public class FRM_Projeto extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         setLocationRelativeTo(null);
+        TableProjeto.setDefaultRenderer(java.util.Date.class, new DateRenderer());
         carregarDadosNaTabela();
+        carregarComboGerentes();
     }
     
+    public class DateRenderer extends DefaultTableCellRenderer {
+
+    private static final long serialVersionUID = 1L;
+    private final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
+    @Override
+    public void setValue(Object value) {
+        // Se o valor for uma data, formate-o. Se não, use o padrão.
+        // O "setText" é necessário aqui para garantir que o valor seja exibido.
+        if (value != null && value instanceof java.util.Date) {
+            setText(formatter.format(value));
+        } else {
+            super.setValue(value);
+        }
+    }
+}
+    private void carregarComboGerentes() {
+   cmb_gerente.removeAllItems(); // Limpa os itens antigos
+
+    String sql = "SELECT nm_usuario FROM tbl_usuario WHERE tp_acesso = 'Gerente' ORDER BY nm_usuario";
+
+    try (Connection conexao = new ConexaoDAO().conectaBD();
+         PreparedStatement stmt = conexao.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery()) {
+            cmb_gerente.addItem("Todos");
+        while (rs.next()) {
+            String nomeGerente = rs.getString("nm_usuario");
+            cmb_gerente.addItem(nomeGerente);
+        }
+
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this, "Erro ao carregar gerentes:\n" + e.getMessage(), "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
+    }
+}
     private void carregarDadosNaTabela() {
     DefaultTableModel modelo = (DefaultTableModel) this.TableProjeto.getModel();
     modelo.setRowCount(0);
@@ -72,17 +111,30 @@ public class FRM_Projeto extends javax.swing.JDialog {
             stmt.setObject(i + 1, parametros.get(i));
         }
 
-        try (ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                modelo.addRow(new Object[]{
-                    rs.getInt("id_projeto"),
-                    rs.getString("nm_projeto"),
-                    rs.getDate("dt_inicioprojeto"),
-                    rs.getDate("dt_fimprojeto"),
-                    rs.getString("status_projeto"),
-                });
-            }
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+ try (ResultSet rs = stmt.executeQuery()) {
+    while (rs.next()) {
+        // Formatar as datas como ddMMyyyy
+        String dataInicioFormatada = "";
+        String dataFimFormatada = "";
+        
+        if (rs.getDate("dt_inicioprojeto") != null) {
+            dataInicioFormatada = sdf.format(rs.getDate("dt_inicioprojeto"));
         }
+
+        if (rs.getDate("dt_fimprojeto") != null) {
+            dataFimFormatada = sdf.format(rs.getDate("dt_fimprojeto"));
+        }
+
+        modelo.addRow(new Object[]{
+            rs.getInt("id_projeto"),
+            rs.getString("nm_projeto"),
+            dataInicioFormatada,
+            dataFimFormatada,
+            rs.getString("status_projeto"),
+        });
+    }
+}
     } catch (SQLException e) {
         JOptionPane.showMessageDialog(this, "Erro ao carregar dados do projeto:\n" + e.getMessage(), "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
         e.printStackTrace();
@@ -106,13 +158,14 @@ public class FRM_Projeto extends javax.swing.JDialog {
         btn_excluirprojeto = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         txt_buscaprojeto = new javax.swing.JTextField();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        cmb_gerente = new javax.swing.JComboBox<>();
         jLabel2 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         rd_todos = new javax.swing.JRadioButton();
         rd_emandamento = new javax.swing.JRadioButton();
         rd_ematraso = new javax.swing.JRadioButton();
         rd_concluido = new javax.swing.JRadioButton();
+        rd_planejado = new javax.swing.JRadioButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -178,7 +231,7 @@ public class FRM_Projeto extends javax.swing.JDialog {
             }
         });
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmb_gerente.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jLabel2.setText("Gerente:");
 
@@ -215,6 +268,14 @@ public class FRM_Projeto extends javax.swing.JDialog {
             }
         });
 
+        buttonGroup1.add(rd_planejado);
+        rd_planejado.setText("Planejado");
+        rd_planejado.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rd_planejadoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -224,11 +285,13 @@ public class FRM_Projeto extends javax.swing.JDialog {
                 .addComponent(rd_emandamento)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(rd_ematraso)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(rd_planejado)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
                 .addComponent(rd_concluido)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addComponent(rd_todos)
-                .addGap(0, 20, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -238,7 +301,8 @@ public class FRM_Projeto extends javax.swing.JDialog {
                     .addComponent(rd_todos)
                     .addComponent(rd_emandamento)
                     .addComponent(rd_ematraso)
-                    .addComponent(rd_concluido))
+                    .addComponent(rd_concluido)
+                    .addComponent(rd_planejado))
                 .addContainerGap(12, Short.MAX_VALUE))
         );
 
@@ -247,31 +311,28 @@ public class FRM_Projeto extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txt_buscaprojeto, javax.swing.GroupLayout.PREFERRED_SIZE, 352, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jComboBox1, 0, 246, Short.MAX_VALUE))
-                            .addComponent(jScrollPane2)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(btn_novoprojeto)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_editarprojeto)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_excluirprojeto)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txt_buscaprojeto, javax.swing.GroupLayout.PREFERRED_SIZE, 352, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cmb_gerente, 0, 246, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btn_novoprojeto)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_editarprojeto)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_excluirprojeto)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -280,7 +341,7 @@ public class FRM_Projeto extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(txt_buscaprojeto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmb_gerente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -302,7 +363,9 @@ public class FRM_Projeto extends javax.swing.JDialog {
     }//GEN-LAST:event_btn_editarprojetoActionPerformed
 
     private void btn_novoprojetoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_novoprojetoActionPerformed
-        // TODO add your handling code here:
+                FRM_CadProjeto cadprojeto = new FRM_CadProjeto(null, true);
+                cadprojeto.setVisible(true);
+                carregarDadosNaTabela();
     }//GEN-LAST:event_btn_novoprojetoActionPerformed
 
     private void txt_buscaprojetoKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_buscaprojetoKeyReleased
@@ -316,6 +379,8 @@ public class FRM_Projeto extends javax.swing.JDialog {
         return "Em Andamento";
     } else if (rd_ematraso.isSelected()) {
         return "Em Atraso";
+    } else if (rd_planejado.isSelected()) {
+        return "Planejado";
     } else if (rd_todos.isSelected()) {
         return "Todos";
     } else {
@@ -385,6 +450,10 @@ public class FRM_Projeto extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_btn_excluirprojetoActionPerformed
 
+    private void rd_planejadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rd_planejadoActionPerformed
+            carregarDadosNaTabela();        // TODO add your handling code here:
+    }//GEN-LAST:event_rd_planejadoActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -428,7 +497,7 @@ public class FRM_Projeto extends javax.swing.JDialog {
     private javax.swing.JButton btn_excluirprojeto;
     private javax.swing.JButton btn_novoprojeto;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JComboBox<String> cmb_gerente;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
@@ -436,6 +505,7 @@ public class FRM_Projeto extends javax.swing.JDialog {
     private javax.swing.JRadioButton rd_concluido;
     private javax.swing.JRadioButton rd_emandamento;
     private javax.swing.JRadioButton rd_ematraso;
+    private javax.swing.JRadioButton rd_planejado;
     private javax.swing.JRadioButton rd_todos;
     private javax.swing.JTextField txt_buscaprojeto;
     // End of variables declaration//GEN-END:variables

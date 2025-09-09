@@ -18,15 +18,21 @@ public class FRM_EditaUsuario extends javax.swing.JDialog {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FRM_EditaUsuario.class.getName());
 
-    /**
-     * Creates new form FRM_EditaUsuario
-     */
+    public String status_usuario;
+    
     public FRM_EditaUsuario(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         setLocationRelativeTo(null);
         initComponents();
+                if (ck_ativo.isSelected()) {
+                status_usuario = "A";
+            } else {
+                status_usuario = "I";
+}
+        
     }
 
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -45,6 +51,11 @@ public class FRM_EditaUsuario extends javax.swing.JDialog {
         cmb_tpacesso = new javax.swing.JComboBox<>();
         txt_senhausuario = new javax.swing.JPasswordField();
         btn_salvar = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
+        txt_username = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        txt_emailusuario = new javax.swing.JTextField();
+        ck_ativo = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Editar Usuário");
@@ -68,56 +79,86 @@ public class FRM_EditaUsuario extends javax.swing.JDialog {
             }
         });
 
+        jLabel5.setText("User Name:");
+
+        jLabel6.setText("Email:");
+
+        ck_ativo.setText("Usuario Ativo?");
+        ck_ativo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ck_ativoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(26, 26, 26)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btn_salvar)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(txt_idusuario, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
-                            .addGap(18, 18, 18)
-                            .addComponent(txt_nmusuario, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(jLabel1)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(txt_idusuario, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(jLabel5))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(txt_nmusuario, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
+                            .addComponent(txt_username)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel4)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel3)
-                                .addComponent(jLabel4))
-                            .addGap(18, 18, 18)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(cmb_tpacesso, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(txt_senhausuario)))))
-                .addContainerGap(34, Short.MAX_VALUE))
+                                .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel6)))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(ck_ativo)
+                                .addGap(18, 18, 18)
+                                .addComponent(btn_salvar)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(cmb_tpacesso, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(txt_senhausuario)
+                            .addComponent(txt_emailusuario))))
+                .addContainerGap(44, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(27, 27, 27)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel1)
-                            .addComponent(txt_idusuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel2))
-                    .addComponent(txt_nmusuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(txt_senhausuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel4)
-                    .addComponent(cmb_tpacesso, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel1)
+                    .addComponent(txt_idusuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btn_salvar)
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(txt_username, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(9, 9, 9)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel2)
+                    .addComponent(txt_nmusuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txt_senhausuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txt_emailusuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cmb_tpacesso, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ck_ativo)
+                    .addComponent(btn_salvar))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
 
         pack();
@@ -128,6 +169,8 @@ public class FRM_EditaUsuario extends javax.swing.JDialog {
         int id = Integer.parseInt(this.txt_idusuario.getText());
         String nome = this.txt_nmusuario.getText();
         String tipoAcesso = (String) this.cmb_tpacesso.getSelectedItem();
+        String user_name = this.txt_username.getText();
+        String email_usuario = this.txt_emailusuario.getText();
 
         char[] novaSenhaChars = this.txt_senhausuario.getPassword();
         boolean alterarSenha = novaSenhaChars.length > 0;
@@ -136,9 +179,10 @@ public class FRM_EditaUsuario extends javax.swing.JDialog {
 
         
         if (alterarSenha) {
-            sql = "UPDATE tbl_usuario SET nm_usuario = ?, senha_usuario = ?, tp_acesso= ? WHERE id_usuario = ?";
+            sql = "UPDATE tbl_usuario SET nm_usuario = ?, senha_usuario = ?, tp_acesso= ?, user_name = ?, email_usuario = ?, "
+                    + "status_usuario = ? WHERE id_usuario = ?";
         } else {
-            sql = "UPDATE tbl_usuario SET nm_usuario = ?, tp_acesso = ? WHERE id_usuario = ?";
+            sql = "UPDATE tbl_usuario SET nm_usuario = ?, tp_acesso = ?, user_name = ?, email_usuario = ?, status_usuario = ? WHERE id_usuario = ?";
         }
 
         try (Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql)) {
@@ -151,11 +195,17 @@ public class FRM_EditaUsuario extends javax.swing.JDialog {
                 String novaSenha = new String(novaSenhaChars);
                 stmt.setString(2, novaSenha);
                 stmt.setString(3, tipoAcesso); 
-                stmt.setInt(4, id); 
+                stmt.setString(4, user_name);
+                stmt.setString(5, email_usuario);
+                stmt.setString(6, status_usuario); 
+                stmt.setInt(7, id); 
                 java.util.Arrays.fill(novaSenhaChars, '0');
             } else {
                 stmt.setString(2, tipoAcesso); 
-                stmt.setInt(3, id); 
+                stmt.setString(3, user_name);
+                stmt.setString(4, email_usuario);
+                stmt.setString(5, status_usuario); 
+                stmt.setInt(6, id); 
             }
 
             int linhasAfetadas = stmt.executeUpdate();
@@ -173,6 +223,14 @@ public class FRM_EditaUsuario extends javax.swing.JDialog {
           
         }        // TODO add your handling code here:
     }//GEN-LAST:event_btn_salvarActionPerformed
+
+    private void ck_ativoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ck_ativoActionPerformed
+            if (ck_ativo.isSelected()) {
+                status_usuario = "A";
+            } else {
+                status_usuario = "I";
+}
+    }//GEN-LAST:event_ck_ativoActionPerformed
 
     /**
      * @param args the command line arguments
@@ -211,22 +269,37 @@ public class FRM_EditaUsuario extends javax.swing.JDialog {
         });
     }
 
-    public void receberDados(int id, String nome, String tp_acesso) {
+    public void receberDados(int id, String nome, String tp_acesso, String user_name, String statususuario, String email_usuario) {
         // Preenche os campos de texto com os dados do usuário
         this.txt_idusuario.setText(String.valueOf(id)); // Converte o int 'id' para String
         this.txt_nmusuario.setText(nome);
         this.cmb_tpacesso.setSelectedItem(tp_acesso);
+        this.txt_username.setText(user_name);
+        this.txt_emailusuario.setText(email_usuario);
+        
+        if ("A".equals(statususuario)) {
+            // Se o status for "A", MARCA a caixa de seleção.
+            this.ck_ativo.setSelected(true);
+        } else {
+            // Para qualquer outro status (como "I"), DESMARCA a caixa.
+            this.ck_ativo.setSelected(false);
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_salvar;
+    private javax.swing.JCheckBox ck_ativo;
     private javax.swing.JComboBox<String> cmb_tpacesso;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JTextField txt_emailusuario;
     private javax.swing.JTextField txt_idusuario;
     private javax.swing.JTextField txt_nmusuario;
     private javax.swing.JPasswordField txt_senhausuario;
+    private javax.swing.JTextField txt_username;
     // End of variables declaration//GEN-END:variables
 }

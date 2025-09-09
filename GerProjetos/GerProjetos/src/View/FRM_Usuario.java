@@ -19,9 +19,8 @@ import javax.swing.table.DefaultTableModel;
  */
 public class FRM_Usuario extends javax.swing.JDialog {
 
-    
     private static final Logger logger = Logger.getLogger(FRM_Usuario.class.getName());
-    
+
     public FRM_Usuario(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -31,49 +30,49 @@ public class FRM_Usuario extends javax.swing.JDialog {
     }
 
     private void carregarDadosNaTabela() {
-    DefaultTableModel modelo = (DefaultTableModel) this.tabelaUsuarios.getModel();
-    String buscausuario = txt_buscausuario.getText();
-    modelo.setRowCount(0);
+        DefaultTableModel modelo = (DefaultTableModel) this.tabelaUsuarios.getModel();
+        String buscausuario = txt_buscausuario.getText();
+        modelo.setRowCount(0);
 
-    
-    String sql;
+        String sql;
 
-    if (buscausuario.trim().isEmpty()) {
-        // Caso o campo de busca esteja vazio, seleciona todos os usuários.
-        sql = "SELECT id_usuario, nm_usuario, tp_acesso FROM tbl_usuario ORDER BY nm_usuario";
-    } else {
-        // Caso haja texto na busca, prepara a consulta com o filtro.
-        sql = "SELECT id_usuario, nm_usuario, tp_acesso FROM tbl_usuario WHERE nm_usuario LIKE ? ORDER BY nm_usuario";
-    }
-
-    try (Connection conexao = new ConexaoDAO().conectaBD();
-         PreparedStatement stmt = conexao.prepareStatement(sql)) {
-
-        
-        if (!buscausuario.trim().isEmpty()) {
-            
-            stmt.setString(1, "%" + buscausuario + "%");
+        if (buscausuario.trim().isEmpty()) {
+            // Caso o campo de busca esteja vazio, seleciona todos os usuários.
+            sql = "SELECT id_usuario, nm_usuario, tp_acesso, user_name, email_usuario, status_usuario FROM tbl_usuario ORDER BY nm_usuario";
+        } else {
+            // Caso haja texto na busca, prepara a consulta com o filtro.
+            sql = "SELECT id_usuario, nm_usuario, tp_acesso, user_name, email_usuario, status_usuario FROM tbl_usuario WHERE nm_usuario LIKE ? ORDER BY nm_usuario";
         }
-        
-        // Usar um segundo try-with-resources para o ResultSet garante que ele também seja fechado.
-        try (ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                modelo.addRow(new Object[]{
-                    rs.getInt("id_usuario"),
-                    rs.getString("nm_usuario"),
-                    rs.getString("tp_acesso")
-                });
+
+        try (Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql)) {
+
+            if (!buscausuario.trim().isEmpty()) {
+
+                stmt.setString(1, "%" + buscausuario + "%");
             }
+
+            // Usar um segundo try-with-resources para o ResultSet garante que ele também seja fechado.
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    modelo.addRow(new Object[]{
+                        rs.getInt("id_usuario"),
+                        rs.getString("nm_usuario"),
+                        rs.getString("user_name"),
+                        rs.getString("email_usuario"),
+                        rs.getString("tp_acesso"),
+                        rs.getString("status_usuario")
+                    });
+                }
+            }
+        } catch (SQLException e) {
+            // MELHORIA: Exibe o erro em uma janela para o usuário, além de logar no console.
+            JOptionPane.showMessageDialog(this, "Erro ao carregar dados dos usuários:\n" + e.getMessage(), "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace(); // Imprime o rastreamento completo do erro no console para depuração.
         }
-    } catch (SQLException e) {
-        // MELHORIA: Exibe o erro em uma janela para o usuário, além de logar no console.
-        JOptionPane.showMessageDialog(this, "Erro ao carregar dados dos usuários:\n" + e.getMessage(), "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
-        e.printStackTrace(); // Imprime o rastreamento completo do erro no console para depuração.
     }
-}
-    
+
     @SuppressWarnings("unchecked")
-    
+
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -90,17 +89,17 @@ public class FRM_Usuario extends javax.swing.JDialog {
 
         tabelaUsuarios.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
             },
             new String [] {
-                "Código", "Nome", "Tipo de Acesso"
+                "Código", "Nome", "User Name", "Email", "Tipo de Acesso", "Status"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -113,6 +112,14 @@ public class FRM_Usuario extends javax.swing.JDialog {
             }
         });
         jScrollPane1.setViewportView(tabelaUsuarios);
+        if (tabelaUsuarios.getColumnModel().getColumnCount() > 0) {
+            tabelaUsuarios.getColumnModel().getColumn(0).setPreferredWidth(5);
+            tabelaUsuarios.getColumnModel().getColumn(1).setPreferredWidth(200);
+            tabelaUsuarios.getColumnModel().getColumn(2).setPreferredWidth(15);
+            tabelaUsuarios.getColumnModel().getColumn(3).setPreferredWidth(100);
+            tabelaUsuarios.getColumnModel().getColumn(4).setPreferredWidth(40);
+            tabelaUsuarios.getColumnModel().getColumn(5).setPreferredWidth(5);
+        }
 
         Btn_editar.setText("Editar");
         Btn_editar.addActionListener(new java.awt.event.ActionListener() {
@@ -155,27 +162,29 @@ public class FRM_Usuario extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(Btn_novo, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Btn_editar, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Btn_deletar, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(jLabel1)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(txt_buscausuario))
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(14, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(Btn_novo, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Btn_editar, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Btn_deletar, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txt_buscausuario, javax.swing.GroupLayout.PREFERRED_SIZE, 398, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 384, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(20, 20, 20)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel1)
-                    .addComponent(txt_buscausuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txt_buscausuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -191,30 +200,31 @@ public class FRM_Usuario extends javax.swing.JDialog {
 
     private void Btn_editarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_editarActionPerformed
         int linhaSelecionada = this.tabelaUsuarios.getSelectedRow();
-        
-        // 3. Obter os dados da linha selecionada
-        int id = (int) this.tabelaUsuarios.getValueAt(linhaSelecionada, 0); // Coluna do ID
-        String nome = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 1); // Coluna do Nome
-        String tp_acesso = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 2); // Coluna do E-mail
 
-        // 4. Abrir a tela de edição, passando os dados para ela
-        // O 'this' se refere à janela principal (FRM_Usuario), e 'true' torna a janela de edição "modal"
+        // 3. Obter os dados da linha selecionada
+        int id = (int) this.tabelaUsuarios.getValueAt(linhaSelecionada, 0);
+        String nome = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 1);
+        String user_name = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 2);
+        String email_usuario = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 3);
+        String tp_acesso = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 4);
+
+        String status_usuario = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 5);
+
         FRM_EditaUsuario telaEdicao = new FRM_EditaUsuario(null, true);
-        
-        // 5. Enviar os dados do usuário para a tela de edição
-        telaEdicao.receberDados(id, nome, tp_acesso);
-        
+
+        telaEdicao.receberDados(id, nome, tp_acesso, user_name, status_usuario, email_usuario);
+
         // 6. Tornar a tela de edição visível
         telaEdicao.setVisible(true);
-        
+
         // 7. (Opcional, mas recomendado) Atualizar a tabela principal após a edição
         // Este código só será executado DEPOIS que a janela de edição for fechada
         carregarDadosNaTabela();
     }//GEN-LAST:event_Btn_editarActionPerformed
 
     private void Btn_novoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_novoActionPerformed
-        FRM_CadUsuario telaDeCadastro = new FRM_CadUsuario(null, true);        
-        telaDeCadastro.setVisible(true);  
+        FRM_CadUsuario telaDeCadastro = new FRM_CadUsuario(null, true);
+        telaDeCadastro.setVisible(true);
         carregarDadosNaTabela();// TODO add your handling code here:
     }//GEN-LAST:event_Btn_novoActionPerformed
 
@@ -269,34 +279,35 @@ public class FRM_Usuario extends javax.swing.JDialog {
 
     private void tabelaUsuariosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelaUsuariosMouseClicked
         // 1. Verificar se foi um duplo-clique
-    if (evt.getClickCount() == 2) {
-        
-        // 2. Pegar a linha selecionada
-        int linhaSelecionada = this.tabelaUsuarios.getSelectedRow();
-        
-        // 3. Obter os dados da linha selecionada
-        int id = (int) this.tabelaUsuarios.getValueAt(linhaSelecionada, 0); // Coluna do ID
-        String nome = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 1); // Coluna do Nome
-        String tp_acesso = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 2); // Coluna do E-mail
+        if (evt.getClickCount() == 2) {
 
-        // 4. Abrir a tela de edição, passando os dados para ela
-        // O 'this' se refere à janela principal (FRM_Usuario), e 'true' torna a janela de edição "modal"
-        FRM_EditaUsuario telaEdicao = new FRM_EditaUsuario(null, true);
-        
-        // 5. Enviar os dados do usuário para a tela de edição
-        telaEdicao.receberDados(id, nome, tp_acesso);
-        
-        // 6. Tornar a tela de edição visível
-        telaEdicao.setVisible(true);
-        
-        // 7. (Opcional, mas recomendado) Atualizar a tabela principal após a edição
-        // Este código só será executado DEPOIS que a janela de edição for fechada
-        carregarDadosNaTabela();
-    }
+            // 2. Pegar a linha selecionada
+            int linhaSelecionada = this.tabelaUsuarios.getSelectedRow();
+
+            // 3. Obter os dados da linha selecionada
+            int id = (int) this.tabelaUsuarios.getValueAt(linhaSelecionada, 0);
+            String nome = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 1);
+            String user_name = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 2);
+            String email_usuario = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 3);
+            String tp_acesso = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 4);
+
+            String status_usuario = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 5);
+
+            FRM_EditaUsuario telaEdicao = new FRM_EditaUsuario(null, true);
+
+            telaEdicao.receberDados(id, nome, tp_acesso, user_name, status_usuario, email_usuario);
+
+            // 6. Tornar a tela de edição visível
+            telaEdicao.setVisible(true);
+
+            // 7. (Opcional, mas recomendado) Atualizar a tabela principal após a edição
+            // Este código só será executado DEPOIS que a janela de edição for fechada
+            carregarDadosNaTabela();
+        }
     }//GEN-LAST:event_tabelaUsuariosMouseClicked
 
     private void txt_buscausuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_buscausuarioActionPerformed
-        
+
     }//GEN-LAST:event_txt_buscausuarioActionPerformed
 
     private void txt_buscausuarioKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_buscausuarioKeyReleased
@@ -325,16 +336,16 @@ public class FRM_Usuario extends javax.swing.JDialog {
         //</editor-fold>
 
         /* Create and display the form */
-            java.awt.EventQueue.invokeLater(() -> {
+        java.awt.EventQueue.invokeLater(() -> {
             FRM_Usuario dialog = new FRM_Usuario(new javax.swing.JFrame(), true);
             dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                 @Override
                 public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
+                    System.exit(0);
+                }
             });
             dialog.setVisible(true);
-                });
+        });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
