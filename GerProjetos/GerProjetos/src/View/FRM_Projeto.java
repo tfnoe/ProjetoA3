@@ -408,11 +408,11 @@ public class FRM_Projeto extends javax.swing.JDialog {
         int linhaSelecionada = this.TableProjeto.getSelectedRow();
 
         // 2. Verificar se realmente há uma linha selecionada
-        if (linhaSelecionada == -1) {
-            JOptionPane.showMessageDialog(this, "Por favor, selecione um projeto para deletar.");
-            return; // Para a execução do método aqui
-        }
-
+        //if (linhaSelecionada == -1) {
+        //    JOptionPane.showMessageDialog(this, "Por favor, selecione um projeto para deletar.");
+        //    return; // Para a execução do método aqui
+        //}
+        // teste de inclusão de comentario 
         // 3. Pegar o ID do usuário da linha selecionada (assumindo que o ID está na primeira coluna, índice 0)
         // O .getValueAt() retorna um Object, então precisamos convertê-lo para String e depois para int.
         int idProjeto = (int) this.TableProjeto.getValueAt(linhaSelecionada, 0);
