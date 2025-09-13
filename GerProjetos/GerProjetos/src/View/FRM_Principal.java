@@ -67,7 +67,6 @@ public class FRM_Principal extends javax.swing.JFrame {
         jMenu4 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
-        jMenuItem4 = new javax.swing.JMenuItem();
 
         jMenu1.setText("jMenu1");
 
@@ -139,9 +138,6 @@ public class FRM_Principal extends javax.swing.JFrame {
             }
         });
         jMenu4.add(jMenuItem3);
-
-        jMenuItem4.setText("Gestão de Tarefas");
-        jMenu4.add(jMenuItem4);
 
         jMenuBar1.add(jMenu4);
 
@@ -275,7 +271,6 @@ public class FRM_Principal extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lbl_usuario;
     private javax.swing.JTable table_projetos;
