@@ -124,6 +124,10 @@ public class TelaLogin extends javax.swing.JFrame {
             
             
             if (rsusuariodao.next()) {
+                
+                Sessao.setIdUsuario(rsusuariodao.getInt("id_usuario"));
+                Sessao.setNomeUsuario(rsusuariodao.getString("nm_usuario"));
+                Sessao.setTpAcesso(rsusuariodao.getString("tp_acesso"));
                 FRM_Principal objfrmprincipal = new FRM_Principal();
                 objfrmprincipal.setUsuario(nm_usuario);
                 objfrmprincipal.setVisible(true);

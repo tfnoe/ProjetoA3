@@ -4,12 +4,21 @@
  */
 package View;
 
+import DAO.ConexaoDAO;
+import com.sun.jdi.connect.spi.Connection;
+import javax.swing.table.DefaultTableModel;
+//import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import javax.swing.JOptionPane;
+import java.sql.ResultSet;
+
 /**
  *
  * @author tf_noe
  */
 public class FRM_Principal extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FRM_Principal.class.getName());
 
     /**
@@ -19,11 +28,22 @@ public class FRM_Principal extends javax.swing.JFrame {
         initComponents();
         //lbl_usuario.setText("Olá " + nomeusuario);
         this.setLocationRelativeTo(null);
+        // Pegar o usuário logado
+        int idUsuarioLogado = Sessao.getIdUsuario();
+
+        // Carregar os projetos desse usuário
+        carregarProjetosUsuario(idUsuarioLogado);
     }
-    
+
     public void setUsuario(String nomeUsuario) {
-        lbl_usuario.setText("Olá "+nomeUsuario);
-    }   
+        lbl_usuario.setText("Olá " + Sessao.getNomeUsuario() + "!");
+
+    }
+
+    private void carregarProjetosUsuarioLogado() {
+        int idUsuarioLogado = Sessao.getIdUsuario();
+        carregarProjetosUsuario(idUsuarioLogado);
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -40,7 +60,7 @@ public class FRM_Principal extends javax.swing.JFrame {
         lbl_usuario = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        table_projetos = new javax.swing.JTable();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu3 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -62,7 +82,7 @@ public class FRM_Principal extends javax.swing.JFrame {
 
         jLabel2.setText("Veja seus projetos:");
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        table_projetos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -78,16 +98,16 @@ public class FRM_Principal extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane1.setViewportView(jTable1);
-        if (jTable1.getColumnModel().getColumnCount() > 0) {
-            jTable1.getColumnModel().getColumn(0).setResizable(false);
-            jTable1.getColumnModel().getColumn(0).setPreferredWidth(2);
-            jTable1.getColumnModel().getColumn(1).setResizable(false);
-            jTable1.getColumnModel().getColumn(1).setPreferredWidth(300);
-            jTable1.getColumnModel().getColumn(2).setResizable(false);
-            jTable1.getColumnModel().getColumn(2).setPreferredWidth(50);
-            jTable1.getColumnModel().getColumn(3).setResizable(false);
-            jTable1.getColumnModel().getColumn(3).setPreferredWidth(50);
+        jScrollPane1.setViewportView(table_projetos);
+        if (table_projetos.getColumnModel().getColumnCount() > 0) {
+            table_projetos.getColumnModel().getColumn(0).setResizable(false);
+            table_projetos.getColumnModel().getColumn(0).setPreferredWidth(2);
+            table_projetos.getColumnModel().getColumn(1).setResizable(false);
+            table_projetos.getColumnModel().getColumn(1).setPreferredWidth(300);
+            table_projetos.getColumnModel().getColumn(2).setResizable(false);
+            table_projetos.getColumnModel().getColumn(2).setPreferredWidth(50);
+            table_projetos.getColumnModel().getColumn(3).setResizable(false);
+            table_projetos.getColumnModel().getColumn(3).setPreferredWidth(50);
         }
 
         jMenu3.setText("Cadastro");
@@ -113,6 +133,11 @@ public class FRM_Principal extends javax.swing.JFrame {
         jMenu4.add(jMenuItem2);
 
         jMenuItem3.setText("Gestão de Equipes");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
         jMenu4.add(jMenuItem3);
 
         jMenuItem4.setText("Gestão de Tarefas");
@@ -129,7 +154,7 @@ public class FRM_Principal extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1047, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lbl_usuario)
@@ -145,8 +170,8 @@ public class FRM_Principal extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(237, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 286, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(264, Short.MAX_VALUE))
         );
 
         pack();
@@ -155,13 +180,64 @@ public class FRM_Principal extends javax.swing.JFrame {
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         FRM_Usuario objusuario = new FRM_Usuario(this, true);
         objusuario.setVisible(true);
-        
+
     }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    public void carregarProjetosUsuario(int idUsuarioLogado) {
+        DefaultTableModel modelo = (DefaultTableModel) this.table_projetos.getModel();
+        modelo.setRowCount(0); // sempre limpa antes de carregar
+
+        String sql = "SELECT p.id_projeto, p.nm_projeto, p.dt_inicioprojeto, p.dt_fimprojeto "
+                + "FROM tbl_projeto p "
+                + "INNER JOIN tbl_projetousuario pu ON p.id_projeto = pu.id_projeto "
+                + "WHERE pu.id_usuario = ?";
+
+        try (java.sql.Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql)){
+
+            //banco = new ConexaoDAO().conectaBD();
+            //pstm = banco.prepareStatement(sql); {
+                
+                
+            stmt.setInt(1, idUsuarioLogado);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                boolean encontrou = false;
+
+                while (rs.next()) {
+                    encontrou = true;
+                    modelo.addRow(new Object[]{
+                        rs.getInt("id_projeto"),
+                        rs.getString("nm_projeto"),
+                        rs.getDate("dt_inicioprojeto"),
+                        rs.getDate("dt_fimprojeto")
+                    });
+                }
+
+                // se não encontrou nenhum projeto → limpa a grid
+                if (!encontrou) {
+                    modelo.setRowCount(0);
+                }
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Erro ao carregar Projetos:\n" + e.getMessage(),
+                    "Erro de Banco de Dados",
+                    JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         FRM_Projeto objprojeto = new FRM_Projeto(this, true);
         objprojeto.setVisible(true);
     }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        FRM_EquipeProjeto objequipeprojeto = new FRM_EquipeProjeto(this, true);
+        objequipeprojeto.setVisible(true);
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -201,7 +277,7 @@ public class FRM_Principal extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
     private javax.swing.JLabel lbl_usuario;
+    private javax.swing.JTable table_projetos;
     // End of variables declaration//GEN-END:variables
 }

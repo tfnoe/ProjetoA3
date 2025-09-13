@@ -14,6 +14,7 @@ public class UsuarioDAO {
     
     Connection banco;
     PreparedStatement pstm;
+    //int iduser;
     
     public ResultSet autenticacaoUsuario (UsuarioDTO objusuarioDTO){
        banco = new ConexaoDAO().conectaBD();

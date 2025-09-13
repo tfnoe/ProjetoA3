@@ -11,6 +11,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.AbstractAction;
+import javax.swing.KeyStroke;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import javax.swing.JTable;
+
 
 /**
  *
@@ -24,14 +30,23 @@ public class FRM_EquipeProjeto extends javax.swing.JDialog {
     /**
      * Creates new form FRM_EquipeProjeto
      */
-    public FRM_EquipeProjeto(java.awt.Frame parent, boolean modal) {
+public FRM_EquipeProjeto(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
         setLocationRelativeTo(null);
-        //carregarDadosUsuarioProjeto();
-        //carregarDadosBuscaUsuario();
 
+        table_equipeprojeto.getInputMap(JTable.WHEN_FOCUSED).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "deleteRow"
+        );
+
+        table_equipeprojeto.getActionMap().put("deleteRow", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                excluirUsuarioSelecionado();
+            }
+        });
     }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -198,6 +213,11 @@ public class FRM_EquipeProjeto extends javax.swing.JDialog {
                 return canEdit [columnIndex];
             }
         });
+        table_equipeprojeto.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                table_equipeprojetoMouseClicked(evt);
+            }
+        });
         jScrollPane3.setViewportView(table_equipeprojeto);
         if (table_equipeprojeto.getColumnModel().getColumnCount() > 0) {
             table_equipeprojeto.getColumnModel().getColumn(0).setResizable(false);
@@ -256,57 +276,59 @@ public class FRM_EquipeProjeto extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+
     private void rd_usernameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rd_usernameActionPerformed
         carregarDadosBuscaUsuario();        // TODO add your handling code here:
     }//GEN-LAST:event_rd_usernameActionPerformed
 
     private void carregarDadosUsuarioProjeto() {
-        DefaultTableModel modelo = (DefaultTableModel) this.table_equipeprojeto.getModel();
-        modelo.setRowCount(0);
+    DefaultTableModel modelo = (DefaultTableModel) this.table_equipeprojeto.getModel();
+    modelo.setRowCount(0);
 
-        String textoIdProjeto = txt_idprojeto.getText().trim();
-        String sql;
+    String textoIdProjeto = txt_idprojeto.getText().trim();
 
-        if (textoIdProjeto.isEmpty()) {
-            // Busca todos os usuários se não houver id_projeto
-            sql = "SELECT id_usuario, nm_usuario, user_name, tp_acesso, status_usuario FROM tbl_usuario ORDER BY nm_usuario";
-        } else {
-            sql = "SELECT "
-                    + "    u.id_usuario, "
-                    + "    u.nm_usuario, "
-                    + "    u.user_name, "
-                    + "    u.tp_acesso, "
-                    + "    u.status_usuario "
-                    + "FROM tbl_projetousuario pu "
-                    + "INNER JOIN tbl_usuario u ON pu.id_usuario = u.id_usuario "
-                    + "WHERE pu.id_projeto = ?";
-        }
+    // Se o campo do projeto estiver vazio, não carrega nada
+    if (textoIdProjeto.isEmpty()) {
+        return;
+    }
 
-        try (Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql)) {
+    String sql = "SELECT "
+            + "    u.id_usuario, "
+            + "    u.nm_usuario, "
+            + "    u.user_name, "
+            + "    u.tp_acesso, "
+            + "    u.status_usuario "
+            + "FROM tbl_projetousuario pu "
+            + "INNER JOIN tbl_usuario u ON pu.id_usuario = u.id_usuario "
+            + "WHERE pu.id_projeto = ?";
 
-            if (!textoIdProjeto.isEmpty()) {
-                int buscaprojeto = Integer.parseInt(textoIdProjeto);
-                stmt.setInt(1, buscaprojeto);
-            }
+    try (Connection conexao = new ConexaoDAO().conectaBD();
+         PreparedStatement stmt = conexao.prepareStatement(sql)) {
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    modelo.addRow(new Object[]{
+        int buscaprojeto = Integer.parseInt(textoIdProjeto);
+        stmt.setInt(1, buscaprojeto);
+
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                modelo.addRow(new Object[]{
                         rs.getInt("id_usuario"),
                         rs.getString("user_name"),
                         rs.getString("nm_usuario"),
                         rs.getString("tp_acesso"),
                         rs.getString("status_usuario")
-                    });
-                }
+                });
             }
-
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Erro ao carregar Usuarios do Projeto:\n" + e.getMessage(),
-                    "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
         }
+
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this,
+                "Erro ao carregar Usuarios do Projeto:\n" + e.getMessage(),
+                "Erro de Banco de Dados",
+                JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
     }
+}
+
 
     private String getStatusSelecionado() {
         if (rd_username.isSelected()) {
@@ -329,23 +351,23 @@ public class FRM_EquipeProjeto extends javax.swing.JDialog {
             // Caso o campo de busca esteja vazio, seleciona todos os usuários.
             sql = "SELECT id_usuario, nm_usuario, tp_acesso, user_name, email_usuario, status_usuario "
                     + "FROM tbl_usuario "
-                    + "ORDER BY nm_usuario";
+                    + "ORDER BY tp_acesso, nm_usuario";
         } else {
             if ("UserName".equalsIgnoreCase(tpBusca)) {
                 sql = "SELECT id_usuario, nm_usuario, tp_acesso, user_name, email_usuario, status_usuario "
                         + "FROM tbl_usuario "
                         + "WHERE user_name LIKE ? AND status_usuario = 'A' "
-                        + "ORDER BY nm_usuario";
+                        + "ORDER BY tp_acesso,nm_usuario";
             } else if ("NmUsuario".equalsIgnoreCase(tpBusca)) {
                 sql = "SELECT id_usuario, nm_usuario, tp_acesso, user_name, email_usuario, status_usuario "
                         + "FROM tbl_usuario "
                         + "WHERE nm_usuario LIKE ? AND status_usuario = 'A' "
-                        + "ORDER BY nm_usuario";
+                        + "ORDER BY tp_acesso,nm_usuario";
             } else if ("IdUsuario".equalsIgnoreCase(tpBusca)) {
                 sql = "SELECT id_usuario, nm_usuario, tp_acesso, user_name, email_usuario, status_usuario "
                         + "FROM tbl_usuario "
                         + "WHERE CAST(id_usuario AS VARCHAR) LIKE ? AND status_usuario = 'A' "
-                        + "ORDER BY nm_usuario";
+                        + "ORDER BY tp_acesso,nm_usuario";
             } else {
                 // Caso não reconheça o tipo de busca
                 JOptionPane.showMessageDialog(this, "Tipo de busca inválido.");
@@ -396,33 +418,56 @@ public class FRM_EquipeProjeto extends javax.swing.JDialog {
         carregarDadosBuscaUsuario();  // TODO add your handling code here:
     }//GEN-LAST:event_txt_buscausuarioKeyReleased
 
-private boolean existeGerenteNoProjeto(int idProjeto) {
-    String sql = "SELECT COUNT(*) AS qtd " +
-                 "FROM tbl_projetousuario pu " +
-                 "INNER JOIN tbl_usuario u ON pu.id_usuario = u.id_usuario " +
-                 "WHERE pu.id_projeto = ? AND u.tp_acesso = 'Gerente'";
+    private boolean existeGerenteNoProjeto(int idProjeto) {
+        String sql = "SELECT COUNT(*) AS qtd "
+                + "FROM tbl_projetousuario pu "
+                + "INNER JOIN tbl_usuario u ON pu.id_usuario = u.id_usuario "
+                + "WHERE pu.id_projeto = ? AND u.tp_acesso = 'Gerente'";
 
-    try (Connection conexao = new ConexaoDAO().conectaBD();
-         PreparedStatement stmt = conexao.prepareStatement(sql)) {
+        try (Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql)) {
 
-        stmt.setInt(1, idProjeto);
+            stmt.setInt(1, idProjeto);
 
-        try (ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt("qtd") > 0;
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("qtd") > 0;
+                }
             }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null,
+                    "Erro ao verificar gerente do projeto:\n" + e.getMessage(),
+                    "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
-
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(null, 
-            "Erro ao verificar gerente do projeto:\n" + e.getMessage(),
-            "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
-        e.printStackTrace();
+        return false;
     }
-    return false;
-}
 
+    private boolean existeUsuarioNoProjeto(int idProjeto, int idUsuario) {
+        String sql = "SELECT COUNT(*) AS qtd "
+                + "FROM tbl_projetousuario pu "
+                + //"INNER JOIN tbl_usuario u ON pu.id_usuario = u.id_usuario " +
+                "WHERE pu.id_projeto = ? AND pu.id_usuario = ?";
 
+        try (Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql)) {
+
+            stmt.setInt(1, idProjeto);
+            stmt.setInt(2, idUsuario);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("qtd") > 0;
+                }
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null,
+                    "Erro ao verificar usuario do projeto:\n" + e.getMessage(),
+                    "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+        return false;
+    }
 
     private void table_buscausuarioMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table_buscausuarioMouseClicked
         // 1. Verificar se foi um duplo-clique
@@ -442,8 +487,12 @@ private boolean existeGerenteNoProjeto(int idProjeto) {
                 JOptionPane.showMessageDialog(this,
                         "Este projeto já possui um usuário com acesso de GERENTE!",
                         "Validação", JOptionPane.WARNING_MESSAGE);
-            } else {
+            } else if (existeUsuarioNoProjeto(idProjeto, idusuario)) {
+                JOptionPane.showMessageDialog(this,
+                        "Usuário já adicionado ao Projeto!",
+                        "Validação", JOptionPane.WARNING_MESSAGE);
 
+            } else {
                 sql = "insert into tbl_projetousuario (id_projeto, id_usuario) values (?,?)";
 
                 try (Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql)) {
@@ -466,7 +515,49 @@ private boolean existeGerenteNoProjeto(int idProjeto) {
         }
     }//GEN-LAST:event_table_buscausuarioMouseClicked
 
-    
+    private void table_equipeprojetoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table_equipeprojetoMouseClicked
+        if (evt.getClickCount() == 2) {
+            excluirUsuarioSelecionado();
+        }
+    }//GEN-LAST:event_table_equipeprojetoMouseClicked
+
+    private void excluirUsuarioSelecionado() {
+        int linhaSelecionada = table_equipeprojeto.getSelectedRow();
+
+        if (linhaSelecionada >= 0) {
+            int idProjeto = Integer.parseInt(txt_idprojeto.getText());
+            int idusuario = (int) table_equipeprojeto.getValueAt(linhaSelecionada, 0);
+
+            int confirmacao = JOptionPane.showConfirmDialog(
+                    null,
+                    "Tem certeza que deseja deletar o usuário selecionado?",
+                    "Confirmação de Exclusão",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (confirmacao == JOptionPane.YES_OPTION) {
+                String sql = "delete from tbl_projetousuario where id_projeto = ? and id_usuario = ?";
+
+                try (Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql)) {
+
+                    stmt.setInt(1, idProjeto);
+                    stmt.setInt(2, idusuario);
+
+                    stmt.executeUpdate();
+
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Erro ao deletar usuario do projeto:\n" + ex.getMessage(),
+                            "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE
+                    );
+                    ex.printStackTrace();
+                }
+
+                carregarDadosUsuarioProjeto();
+            }
+        }
+    }
 
     private void carregarNomeProjeto() {
         String textoIdProjeto = txt_idprojeto.getText().trim();
