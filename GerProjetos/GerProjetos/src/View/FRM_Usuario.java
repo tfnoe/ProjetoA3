@@ -37,10 +37,10 @@ public class FRM_Usuario extends javax.swing.JDialog {
         String sql;
 
         if (buscausuario.trim().isEmpty()) {
-            // Caso o campo de busca esteja vazio, seleciona todos os usuários.
+            
             sql = "SELECT id_usuario, nm_usuario, tp_acesso, user_name, email_usuario, status_usuario FROM tbl_usuario ORDER BY nm_usuario";
         } else {
-            // Caso haja texto na busca, prepara a consulta com o filtro.
+            
             sql = "SELECT id_usuario, nm_usuario, tp_acesso, user_name, email_usuario, status_usuario FROM tbl_usuario WHERE nm_usuario LIKE ? ORDER BY nm_usuario";
         }
 
@@ -51,7 +51,7 @@ public class FRM_Usuario extends javax.swing.JDialog {
                 stmt.setString(1, "%" + buscausuario + "%");
             }
 
-            // Usar um segundo try-with-resources para o ResultSet garante que ele também seja fechado.
+            
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     modelo.addRow(new Object[]{
@@ -65,9 +65,9 @@ public class FRM_Usuario extends javax.swing.JDialog {
                 }
             }
         } catch (SQLException e) {
-            // MELHORIA: Exibe o erro em uma janela para o usuário, além de logar no console.
+            
             JOptionPane.showMessageDialog(this, "Erro ao carregar dados dos usuários:\n" + e.getMessage(), "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace(); // Imprime o rastreamento completo do erro no console para depuração.
+            e.printStackTrace(); 
         }
     }
 
@@ -201,7 +201,7 @@ public class FRM_Usuario extends javax.swing.JDialog {
     private void Btn_editarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_editarActionPerformed
         int linhaSelecionada = this.tabelaUsuarios.getSelectedRow();
 
-        // 3. Obter os dados da linha selecionada
+        
         int id = (int) this.tabelaUsuarios.getValueAt(linhaSelecionada, 0);
         String nome = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 1);
         String user_name = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 2);
@@ -214,11 +214,10 @@ public class FRM_Usuario extends javax.swing.JDialog {
 
         telaEdicao.receberDados(id, nome, tp_acesso, user_name, status_usuario, email_usuario);
 
-        // 6. Tornar a tela de edição visível
+        
         telaEdicao.setVisible(true);
 
-        // 7. (Opcional, mas recomendado) Atualizar a tabela principal após a edição
-        // Este código só será executado DEPOIS que a janela de edição for fechada
+        
         carregarDadosNaTabela();
     }//GEN-LAST:event_Btn_editarActionPerformed
 
@@ -230,61 +229,60 @@ public class FRM_Usuario extends javax.swing.JDialog {
 
     private void Btn_deletarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_deletarActionPerformed
 
-        // 1. Pegar a linha selecionada na tabela
+        
         int linhaSelecionada = this.tabelaUsuarios.getSelectedRow();
 
-        // 2. Verificar se realmente há uma linha selecionada
+        
         if (linhaSelecionada == -1) {
             JOptionPane.showMessageDialog(this, "Por favor, selecione um usuário para deletar.");
-            return; // Para a execução do método aqui
+            return; 
         }
 
-        // 3. Pegar o ID do usuário da linha selecionada (assumindo que o ID está na primeira coluna, índice 0)
-        // O .getValueAt() retorna um Object, então precisamos convertê-lo para String e depois para int.
+
         int idUsuario = (int) this.tabelaUsuarios.getValueAt(linhaSelecionada, 0);
 
-        // 4. Pedir confirmação ao usuário (boa prática)
+      
         int confirmacao = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja deletar o usuário selecionado?", "Confirmação de Exclusão", JOptionPane.YES_NO_OPTION);
 
         if (confirmacao == JOptionPane.YES_OPTION) {
-            // Se o usuário clicou "Sim", prossiga com a exclusão
+            
             String sql = "DELETE FROM tbl_usuario WHERE id_usuario = ?";
 
             try (Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql)) {
 
-                // 5. Substituir o '?' pelo ID do usuário
+                
                 stmt.setInt(1, idUsuario);
 
-                // 6. Executar o comando de exclusão e verificar se alguma linha foi afetada
+                
                 int linhasAfetadas = stmt.executeUpdate();
 
                 if (linhasAfetadas > 0) {
-                    // Se a exclusão deu certo
+                    
                     JOptionPane.showMessageDialog(this, "Usuário deletado com sucesso!");
 
-                    // 7. Atualizar a tabela para refletir a exclusão
+                    
                     this.carregarDadosNaTabela();
                 } else {
-                    // Se nenhum usuário com aquele ID foi encontrado
+                    
                     JOptionPane.showMessageDialog(this, "Erro: Usuário não encontrado no banco de dados.");
                 }
 
             } catch (SQLException e) {
-                // Em caso de erro de SQL
+                
                 JOptionPane.showMessageDialog(this, "Erro ao deletar usuário do banco de dados:\n" + e.getMessage());
             }
         }
-        // TODO add your handling code here:
+        
     }//GEN-LAST:event_Btn_deletarActionPerformed
 
     private void tabelaUsuariosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelaUsuariosMouseClicked
-        // 1. Verificar se foi um duplo-clique
+        
         if (evt.getClickCount() == 2) {
 
-            // 2. Pegar a linha selecionada
+            
             int linhaSelecionada = this.tabelaUsuarios.getSelectedRow();
 
-            // 3. Obter os dados da linha selecionada
+            
             int id = (int) this.tabelaUsuarios.getValueAt(linhaSelecionada, 0);
             String nome = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 1);
             String user_name = (String) this.tabelaUsuarios.getValueAt(linhaSelecionada, 2);
@@ -297,11 +295,10 @@ public class FRM_Usuario extends javax.swing.JDialog {
 
             telaEdicao.receberDados(id, nome, tp_acesso, user_name, status_usuario, email_usuario);
 
-            // 6. Tornar a tela de edição visível
+            
             telaEdicao.setVisible(true);
 
-            // 7. (Opcional, mas recomendado) Atualizar a tabela principal após a edição
-            // Este código só será executado DEPOIS que a janela de edição for fechada
+            
             carregarDadosNaTabela();
         }
     }//GEN-LAST:event_tabelaUsuariosMouseClicked

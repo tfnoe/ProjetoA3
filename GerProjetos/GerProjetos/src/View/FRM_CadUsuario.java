@@ -66,7 +66,7 @@ public class FRM_CadUsuario extends javax.swing.JDialog {
             }
         });
 
-        Cmb_tpacesso.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Admin", "Gerente", "Membro" }));
+        Cmb_tpacesso.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Admin", "Gerente", "Funcionário" }));
         Cmb_tpacesso.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Cmb_tpacessoActionPerformed(evt);

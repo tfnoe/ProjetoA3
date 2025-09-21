@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import java.sql.ResultSet;
+import View.Sessao;
 
 /**
  *
@@ -26,25 +27,61 @@ public class FRM_Principal extends javax.swing.JFrame {
      */
     public FRM_Principal() {
         initComponents();
+        inicializarTela();
+
+        //initComponents();
         //lbl_usuario.setText("Olá " + nomeusuario);
-        this.setLocationRelativeTo(null);
+        //this.setLocationRelativeTo(null);
         // Pegar o usuário logado
-        int idUsuarioLogado = Sessao.getIdUsuario();
-
+        //int idUsuarioLogado = Sessao.getIdUsuario();
+        //verificarPermissoes();
         // Carregar os projetos desse usuário
+        //carregarProjetosUsuario(idUsuarioLogado);
+    }
+
+    private void inicializarTela() {
+        this.setLocationRelativeTo(null); // Centraliza a janela
+
+        // 1. Pega a instância da sessão UMA VEZ
+        Sessao sessao = Sessao.getInstance();
+
+        // 2. Define a mensagem de boas-vindas
+        String nomeUsuario = sessao.getNomeUsuario();
+        String tpacesso = sessao.getTpAcesso();
+        
+        if (nomeUsuario != null && !nomeUsuario.isEmpty()) {
+            lbl_usuario.setText("Olá, " + nomeUsuario + "!");
+            lbl_tpacesso.setText("Tipo de Acesso: " + tpacesso);
+        } else {
+            lbl_usuario.setText("Usuário anônimo");
+        }
+
+        // 3. Verifica as permissões do usuário
+        verificarPermissoes();
+
+        // 4. Carrega os projetos do usuário logado
+        int idUsuarioLogado = sessao.getIdUsuario();
         carregarProjetosUsuario(idUsuarioLogado);
     }
 
-    public void setUsuario(String nomeUsuario) {
-        lbl_usuario.setText("Olá " + Sessao.getNomeUsuario() + "!");
+    private void verificarPermissoes() {
+        String tipoUsuarioLogado = Sessao.getInstance().getTpAcesso();
 
+        if (tipoUsuarioLogado == null) {
+            tipoUsuarioLogado = "";
+        }
+
+        // Aplica a regra para o menu de cadastro de usuário
+        // CORREÇÃO: A variável era btn_cadusuario, que é um JMenu, não um botão.
+        // A lógica de habilitar/desabilitar ou mostrar/esconder é a mesma.
+        if ("Admin".equalsIgnoreCase(tipoUsuarioLogado)) {
+            btn_cadusuario.setEnabled(true); // Se for Admin, o menu fica VISÍVEL
+        } else {
+            btn_cadusuario.setEnabled(false); // Para outros, o menu fica INVISÍVEL
+        }
     }
 
-    private void carregarProjetosUsuarioLogado() {
-        int idUsuarioLogado = Sessao.getIdUsuario();
-        carregarProjetosUsuario(idUsuarioLogado);
-    }
-
+    // ... resto do seu código
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -61,8 +98,9 @@ public class FRM_Principal extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         table_projetos = new javax.swing.JTable();
+        lbl_tpacesso = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu3 = new javax.swing.JMenu();
+        btn_cadusuario = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
@@ -109,7 +147,9 @@ public class FRM_Principal extends javax.swing.JFrame {
             table_projetos.getColumnModel().getColumn(3).setPreferredWidth(50);
         }
 
-        jMenu3.setText("Cadastro");
+        lbl_tpacesso.setText("jLabel1");
+
+        btn_cadusuario.setText("Cadastro");
 
         jMenuItem1.setText("Cadastro Usuário");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
@@ -117,9 +157,9 @@ public class FRM_Principal extends javax.swing.JFrame {
                 jMenuItem1ActionPerformed(evt);
             }
         });
-        jMenu3.add(jMenuItem1);
+        btn_cadusuario.add(jMenuItem1);
 
-        jMenuBar1.add(jMenu3);
+        jMenuBar1.add(btn_cadusuario);
 
         jMenu4.setText("Projeto");
 
@@ -157,6 +197,10 @@ public class FRM_Principal extends javax.swing.JFrame {
                             .addComponent(jLabel2))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(lbl_tpacesso)
+                .addGap(14, 14, 14))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -167,7 +211,9 @@ public class FRM_Principal extends javax.swing.JFrame {
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 286, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(264, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 241, Short.MAX_VALUE)
+                .addComponent(lbl_tpacesso)
+                .addContainerGap())
         );
 
         pack();
@@ -179,51 +225,48 @@ public class FRM_Principal extends javax.swing.JFrame {
 
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
-    public void carregarProjetosUsuario(int idUsuarioLogado) {
+    public void carregarProjetosUsuario(int idUsuario) {
         DefaultTableModel modelo = (DefaultTableModel) this.table_projetos.getModel();
-        modelo.setRowCount(0); // sempre limpa antes de carregar
+        modelo.setRowCount(0); // Limpa a tabela antes de carregar novos dados
 
         String sql = "SELECT p.id_projeto, p.nm_projeto, p.dt_inicioprojeto, p.dt_fimprojeto "
                 + "FROM tbl_projeto p "
                 + "INNER JOIN tbl_projetousuario pu ON p.id_projeto = pu.id_projeto "
                 + "WHERE pu.id_usuario = ?";
 
-        try (java.sql.Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql)){
+        try (java.sql.Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql)) {
 
-            //banco = new ConexaoDAO().conectaBD();
-            //pstm = banco.prepareStatement(sql); {
-                
-                
-            stmt.setInt(1, idUsuarioLogado);
+            stmt.setInt(1, idUsuario);
 
             try (ResultSet rs = stmt.executeQuery()) {
-                boolean encontrou = false;
-
                 while (rs.next()) {
-                    encontrou = true;
+                    // Pega a data do banco
+                    java.sql.Date dataInicio = rs.getDate("dt_inicioprojeto");
+                    java.sql.Date dataFim = rs.getDate("dt_fimprojeto");
+
+                    // Formata a data para o padrão brasileiro
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+
+                    String dataInicioFormatada = (dataInicio == null) ? "" : sdf.format(dataInicio);
+                    String dataFimFormatada = (dataFim == null) ? "" : sdf.format(dataFim);
+
                     modelo.addRow(new Object[]{
                         rs.getInt("id_projeto"),
                         rs.getString("nm_projeto"),
-                        rs.getDate("dt_inicioprojeto"),
-                        rs.getDate("dt_fimprojeto")
+                        dataInicioFormatada, // Usa a data formatada
+                        dataFimFormatada // Usa a data formatada
                     });
                 }
-
-                // se não encontrou nenhum projeto → limpa a grid
-                if (!encontrou) {
-                    modelo.setRowCount(0);
-                }
             }
+            // MELHORIA: Bloco 'if (!encontrou)' removido por ser desnecessário,
+            // pois a tabela já é limpa no início do método.
 
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Erro ao carregar Projetos:\n" + e.getMessage(),
-                    "Erro de Banco de Dados",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Erro ao carregar Projetos:\n" + e.getMessage(),
+                    "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
-
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         FRM_Projeto objprojeto = new FRM_Projeto(this, true);
@@ -261,10 +304,10 @@ public class FRM_Principal extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenu btn_cadusuario;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenu jMenu5;
     private javax.swing.JMenuBar jMenuBar1;
@@ -272,6 +315,7 @@ public class FRM_Principal extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lbl_tpacesso;
     private javax.swing.JLabel lbl_usuario;
     private javax.swing.JTable table_projetos;
     // End of variables declaration//GEN-END:variables

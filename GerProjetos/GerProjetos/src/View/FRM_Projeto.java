@@ -15,18 +15,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.text.SimpleDateFormat;
 import javax.swing.table.DefaultTableCellRenderer;
+import DAO.UsuarioDAO;
 
 /**
  *
  * @author tf_noe
  */
 public class FRM_Projeto extends javax.swing.JDialog {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FRM_Projeto.class.getName());
 
-    /**
-     * Creates new form FRM_Projeto
-     */
+ 
     public FRM_Projeto(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -34,118 +33,164 @@ public class FRM_Projeto extends javax.swing.JDialog {
         TableProjeto.setDefaultRenderer(java.util.Date.class, new DateRenderer());
         carregarDadosNaTabela();
         carregarComboGerentes();
+        verificarPermissoes();
     }
-    
+
+    private void verificarPermissoes() {
+        String tipoUsuarioLogado = Sessao.getInstance().getTpAcesso();
+
+        if (tipoUsuarioLogado == null) {
+            tipoUsuarioLogado = "";
+        }
+
+        if ("Admin".equalsIgnoreCase(tipoUsuarioLogado) || "Gerente".equalsIgnoreCase(tipoUsuarioLogado)) {
+            btn_novoprojeto.setEnabled(true);
+            btn_editarprojeto.setEnabled(true);
+            btn_excluirprojeto.setEnabled(true);
+        } else {
+            btn_novoprojeto.setEnabled(false);
+            btn_editarprojeto.setEnabled(false);
+            btn_excluirprojeto.setEnabled(false);
+        }
+    }
+
     public class DateRenderer extends DefaultTableCellRenderer {
 
-    private static final long serialVersionUID = 1L;
-    private final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        private static final long serialVersionUID = 1L;
+        private final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
-    @Override
-    public void setValue(Object value) {
-        // Se o valor for uma data, formate-o. Se não, use o padrão.
-        // O "setText" é necessário aqui para garantir que o valor seja exibido.
-        if (value != null && value instanceof java.util.Date) {
-            setText(formatter.format(value));
-        } else {
-            super.setValue(value);
+        @Override
+        public void setValue(Object value) {
+         
+            if (value != null && value instanceof java.util.Date) {
+                setText(formatter.format(value));
+            } else {
+                super.setValue(value);
+            }
         }
     }
-}
+
     private void carregarComboGerentes() {
-   cmb_gerente.removeAllItems(); // Limpa os itens antigos
+        cmb_gerente.removeAllItems(); // Limpa os itens antigos
 
-    String sql = "SELECT nm_usuario FROM tbl_usuario WHERE tp_acesso = 'Gerente' ORDER BY nm_usuario";
+        String sql = "SELECT nm_usuario FROM tbl_usuario WHERE tp_acesso = 'Gerente' ORDER BY nm_usuario";
 
-    try (Connection conexao = new ConexaoDAO().conectaBD();
-         PreparedStatement stmt = conexao.prepareStatement(sql);
-         ResultSet rs = stmt.executeQuery()) {
+        try (Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
             cmb_gerente.addItem("Todos");
-        while (rs.next()) {
-            String nomeGerente = rs.getString("nm_usuario");
-            cmb_gerente.addItem(nomeGerente);
-        }
+            while (rs.next()) {
+                String nomeGerente = rs.getString("nm_usuario");
+                cmb_gerente.addItem(nomeGerente);
+            }
 
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(this, "Erro ao carregar gerentes:\n" + e.getMessage(), "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
-        e.printStackTrace();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao carregar gerentes:\n" + e.getMessage(), "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
     }
-}
+
     private void carregarDadosNaTabela() {
-    DefaultTableModel modelo = (DefaultTableModel) this.TableProjeto.getModel();
-    modelo.setRowCount(0);
+        DefaultTableModel modelo = (DefaultTableModel) this.TableProjeto.getModel();
+        modelo.setRowCount(0);
 
-    // 1. Obter os valores dos filtros da interface
-    String buscaprojeto = txt_buscaprojeto.getText();
-    String statusFiltro = getStatusSelecionado();
-
-    // 2. Construir a consulta SQL dinamicamente
-    // Usamos 'WHERE 1=1' como um truque para facilitar a adição de cláusulas 'AND'
-    StringBuilder sql = new StringBuilder("SELECT * FROM tbl_projeto WHERE 1=1");
-    
-    // Lista para guardar os valores dos parâmetros de forma segura
-    List<Object> parametros = new ArrayList<>();
-
-    // 3. Adicionar o filtro de NOME, se houver texto
-    if (!buscaprojeto.trim().isEmpty()) {
-        sql.append(" AND nm_projeto LIKE ?");
-        parametros.add("%" + buscaprojeto + "%");
-    }
-
-    // 4. Adicionar o filtro de STATUS, se a opção selecionada não for "Todos"
-    if (!statusFiltro.equals("Todos")) {
-        sql.append(" AND status_projeto = ?");
-        parametros.add(statusFiltro);
-    }
-
-    // Adicionar a ordenação no final da consulta
-    sql.append(" ORDER BY id_projeto");
-
-    try (Connection conexao = new ConexaoDAO().conectaBD();
-         PreparedStatement stmt = conexao.prepareStatement(sql.toString())) {
-
-        // 5. Definir os parâmetros na PreparedStatement
-        // Este laço percorre a lista de parâmetros e os adiciona à consulta
-        for (int i = 0; i < parametros.size(); i++) {
-            // O primeiro parâmetro é o índice 1, o segundo é 2, e assim por diante
-            stmt.setObject(i + 1, parametros.get(i));
-        }
-
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
- try (ResultSet rs = stmt.executeQuery()) {
-    while (rs.next()) {
-        // Formatar as datas como ddMMyyyy
-        String dataInicioFormatada = "";
-        String dataFimFormatada = "";
         
-        if (rs.getDate("dt_inicioprojeto") != null) {
-            dataInicioFormatada = sdf.format(rs.getDate("dt_inicioprojeto"));
+        String buscaprojeto = txt_buscaprojeto.getText();
+        String statusFiltro = getStatusSelecionado();
+        Object gerenteSelecionadoObj = cmb_gerente.getSelectedItem();
+
+       
+        StringBuilder sql = new StringBuilder(
+                "SELECT DISTINCT p.* FROM tbl_projeto p "
+                + "INNER JOIN tbl_projetousuario pu ON p.id_projeto = pu.id_projeto "
+                + "INNER JOIN tbl_usuario u ON pu.id_usuario = u.id_usuario "
+                + "WHERE 1=1"
+        );
+
+        List<Object> parametros = new ArrayList<>();
+
+        
+        if (!buscaprojeto.trim().isEmpty()) {
+            sql.append(" AND p.nm_projeto LIKE ?"); 
+            parametros.add("%" + buscaprojeto + "%");
         }
 
-        if (rs.getDate("dt_fimprojeto") != null) {
-            dataFimFormatada = sdf.format(rs.getDate("dt_fimprojeto"));
+        
+        if (!statusFiltro.equals("Todos")) {
+            sql.append(" AND p.status_projeto = ?"); 
+            parametros.add(statusFiltro);
         }
 
-        modelo.addRow(new Object[]{
-            rs.getInt("id_projeto"),
-            rs.getString("nm_projeto"),
-            dataInicioFormatada,
-            dataFimFormatada,
-            rs.getString("status_projeto"),
-        });
-    }
-}
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(this, "Erro ao carregar dados do projeto:\n" + e.getMessage(), "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
-        e.printStackTrace();
-    }
-}
+        
+        if (gerenteSelecionadoObj != null && !"Todos".equalsIgnoreCase(String.valueOf(gerenteSelecionadoObj))) {
 
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
+            int idGerente = 0; 
+            String nomeGerente = String.valueOf(gerenteSelecionadoObj);
+
+            
+            String sql2 = "SELECT id_usuario FROM tbl_usuario WHERE nm_usuario = ?";
+
+            try (Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt2 = conexao.prepareStatement(sql2)) { // Renomeado para stmt2 para evitar conflito
+
+                stmt2.setString(1, nomeGerente);
+
+                try (ResultSet rs2 = stmt2.executeQuery()) {
+                    
+                    if (rs2.next()) {
+                        
+                        idGerente = rs2.getInt("id_usuario");
+                    }
+                }
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Erro ao buscar ID do gerente:\n" + e.getMessage(), "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
+
+            
+            if (idGerente > 0) {
+                sql.append(" AND u.id_usuario = ?");
+                parametros.add(idGerente);
+            }
+        }
+
+        
+        sql.append(" ORDER BY p.id_projeto");
+
+        try (Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql.toString())) {
+
+            
+            for (int i = 0; i < parametros.size(); i++) {
+                stmt.setObject(i + 1, parametros.get(i));
+            }
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    
+                    String dataInicioFormatada = "";
+                    String dataFimFormatada = "";
+
+                    if (rs.getDate("dt_inicioprojeto") != null) {
+                        dataInicioFormatada = sdf.format(rs.getDate("dt_inicioprojeto"));
+                    }
+                    if (rs.getDate("dt_fimprojeto") != null) {
+                        dataFimFormatada = sdf.format(rs.getDate("dt_fimprojeto"));
+                    }
+
+                    modelo.addRow(new Object[]{
+                        rs.getInt("id_projeto"),
+                        rs.getString("nm_projeto"),
+                        dataInicioFormatada,
+                        dataFimFormatada,
+                        rs.getString("status_projeto")
+                    });
+                }
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao carregar dados do projeto:\n" + e.getMessage(), "Erro de Banco de Dados", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -232,6 +277,11 @@ public class FRM_Projeto extends javax.swing.JDialog {
         });
 
         cmb_gerente.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmb_gerente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmb_gerenteActionPerformed(evt);
+            }
+        });
 
         jLabel2.setText("Gerente:");
 
@@ -359,13 +409,26 @@ public class FRM_Projeto extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_editarprojetoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_editarprojetoActionPerformed
-        // TODO add your handling code here:
+        int linhaSelecionada = this.TableProjeto.getSelectedRow();
+
+        
+        int id = (int) this.TableProjeto.getValueAt(linhaSelecionada, 0);
+        
+        FRM_EditaProjeto editaprojeto = new FRM_EditaProjeto(null, true);
+
+        editaprojeto.receberDados(id);
+
+        
+        editaprojeto.setVisible(true);
+
+        
+        carregarDadosNaTabela();        
     }//GEN-LAST:event_btn_editarprojetoActionPerformed
 
     private void btn_novoprojetoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_novoprojetoActionPerformed
-                FRM_CadProjeto cadprojeto = new FRM_CadProjeto(null, true);
-                cadprojeto.setVisible(true);
-                carregarDadosNaTabela();
+        FRM_CadProjeto cadprojeto = new FRM_CadProjeto(null, true);
+        cadprojeto.setVisible(true);
+        carregarDadosNaTabela();
     }//GEN-LAST:event_btn_novoprojetoActionPerformed
 
     private void txt_buscaprojetoKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_buscaprojetoKeyReleased
@@ -373,22 +436,22 @@ public class FRM_Projeto extends javax.swing.JDialog {
     }//GEN-LAST:event_txt_buscaprojetoKeyReleased
 
     private String getStatusSelecionado() {
-    if (rd_concluido.isSelected()) {
-        return "Concluído";
-    } else if (rd_emandamento.isSelected()) {
-        return "Em Andamento";
-    } else if (rd_ematraso.isSelected()) {
-        return "Em Atraso";
-    } else if (rd_planejado.isSelected()) {
-        return "Planejado";
-    } else if (rd_todos.isSelected()) {
-        return "Todos";
-    } else {
-        return "Todos"; // O padrão é "Todos"
-    }
+        if (rd_concluido.isSelected()) {
+            return "Concluído";
+        } else if (rd_emandamento.isSelected()) {
+            return "Em Andamento";
+        } else if (rd_ematraso.isSelected()) {
+            return "Em Atraso";
+        } else if (rd_planejado.isSelected()) {
+            return "Planejado";
+        } else if (rd_todos.isSelected()) {
+            return "Todos";
+        } else {
+            return "Todos"; 
+        }
     }
     private void rd_todosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rd_todosActionPerformed
-        carregarDadosNaTabela();        // TODO add your handling code here:
+        carregarDadosNaTabela();        
     }//GEN-LAST:event_rd_todosActionPerformed
 
     private void rd_emandamentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rd_emandamentoActionPerformed
@@ -404,55 +467,52 @@ public class FRM_Projeto extends javax.swing.JDialog {
     }//GEN-LAST:event_rd_concluidoActionPerformed
 
     private void btn_excluirprojetoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_excluirprojetoActionPerformed
-         // 1. Pegar a linha selecionada na tabela
+        
         int linhaSelecionada = this.TableProjeto.getSelectedRow();
 
-        // 2. Verificar se realmente há uma linha selecionada
-        //if (linhaSelecionada == -1) {
-        //    JOptionPane.showMessageDialog(this, "Por favor, selecione um projeto para deletar.");
-        //    return; // Para a execução do método aqui
-        //}
-        // teste de inclusão de comentario 
-        // 3. Pegar o ID do usuário da linha selecionada (assumindo que o ID está na primeira coluna, índice 0)
-        // O .getValueAt() retorna um Object, então precisamos convertê-lo para String e depois para int.
+        
         int idProjeto = (int) this.TableProjeto.getValueAt(linhaSelecionada, 0);
 
-        // 4. Pedir confirmação ao usuário (boa prática)
+        
         int confirmacao = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja deletar o projeto selecionado?", "Confirmação de Exclusão", JOptionPane.YES_NO_OPTION);
 
         if (confirmacao == JOptionPane.YES_OPTION) {
-            // Se o usuário clicou "Sim", prossiga com a exclusão
+            
             String sql = "DELETE FROM tbl_projeto WHERE id_projeto = ?";
 
             try (Connection conexao = new ConexaoDAO().conectaBD(); PreparedStatement stmt = conexao.prepareStatement(sql)) {
 
-                // 5. Substituir o '?' pelo ID do usuário
+                
                 stmt.setInt(1, idProjeto);
 
-                // 6. Executar o comando de exclusão e verificar se alguma linha foi afetada
+                
                 int linhasAfetadas = stmt.executeUpdate();
 
                 if (linhasAfetadas > 0) {
-                    // Se a exclusão deu certo
+                    
                     JOptionPane.showMessageDialog(this, "Projeto deletado com sucesso!");
 
-                    // 7. Atualizar a tabela para refletir a exclusão
+                    
                     this.carregarDadosNaTabela();
                 } else {
-                    // Se nenhum usuário com aquele ID foi encontrado
+                    
                     JOptionPane.showMessageDialog(this, "Erro: Projeto não encontrado no banco de dados.");
                 }
 
             } catch (SQLException e) {
-                // Em caso de erro de SQL
+                
                 JOptionPane.showMessageDialog(this, "Erro ao deletar projeto do banco de dados:\n" + e.getMessage());
             }
         }
     }//GEN-LAST:event_btn_excluirprojetoActionPerformed
 
     private void rd_planejadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rd_planejadoActionPerformed
-            carregarDadosNaTabela();        // TODO add your handling code here:
+        carregarDadosNaTabela();        // TODO add your handling code here:
     }//GEN-LAST:event_rd_planejadoActionPerformed
+
+    private void cmb_gerenteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmb_gerenteActionPerformed
+        carregarDadosNaTabela(); 
+    }//GEN-LAST:event_cmb_gerenteActionPerformed
 
     /**
      * @param args the command line arguments

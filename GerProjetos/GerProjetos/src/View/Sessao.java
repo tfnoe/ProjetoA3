@@ -9,38 +9,58 @@ package View;
  * @author tf_noe
  */
 public class Sessao {
-    private static int idUsuario;
-    private static String nomeUsuario;
-    private static String tpAcesso;
 
-    public static int getIdUsuario() {
+    // 1. A única instância da classe (privada e estática)
+    private static Sessao instance;
+
+    
+    private int idUsuario;
+    private String nomeUsuario;
+    private String tpAcesso; 
+
+    
+    private Sessao() {
+    }
+
+    
+    public static Sessao getInstance() {
+        if (instance == null) {
+            instance = new Sessao();
+        }
+        return instance;
+    }
+
+    
+
+    public int getIdUsuario() {
         return idUsuario;
     }
 
-    public static void setIdUsuario(int idUsuario) {
-        Sessao.idUsuario = idUsuario;
+    public void setIdUsuario(int idUsuario) {
+        this.idUsuario = idUsuario;
     }
 
-    public static String getNomeUsuario() {
+    public String getNomeUsuario() {
         return nomeUsuario;
     }
 
-    public static void setNomeUsuario(String nomeUsuario) {
-        Sessao.nomeUsuario = nomeUsuario;
+    public void setNomeUsuario(String nomeUsuario) {
+        this.nomeUsuario = nomeUsuario;
     }
 
-    public static String getTpAcesso() {
+    public String getTpAcesso() {
         return tpAcesso;
     }
 
-    public static void setTpAcesso(String tpAcesso) {
-        Sessao.tpAcesso = tpAcesso;
+    public void setTpAcesso(String tpAcesso) {
+        this.tpAcesso = tpAcesso;
     }
-
-    public static void limpar() {
-        idUsuario = 0;
-        nomeUsuario = null;
-        tpAcesso = null;
+    
+    
+    public void limpar() {
+        this.idUsuario = 0;
+        this.nomeUsuario = null;
+        this.tpAcesso = null;
     }
 }
 

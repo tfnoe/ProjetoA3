@@ -70,7 +70,7 @@ public class FRM_EditaUsuario extends javax.swing.JDialog {
 
         txt_idusuario.setEnabled(false);
 
-        cmb_tpacesso.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Admin", "Gerente", "Membro" }));
+        cmb_tpacesso.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Admin", "Gerente", "Funcionário" }));
 
         btn_salvar.setText("Salvar");
         btn_salvar.addActionListener(new java.awt.event.ActionListener() {
